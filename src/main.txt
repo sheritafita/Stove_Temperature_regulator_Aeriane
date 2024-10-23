@@ -1,0 +1,32 @@
+#include "IODriver.h"
+#include "Arduino.h"
+
+void setup()
+{
+init_GPIO ();
+Serial.begin(115200);
+Serial.println("Starting");
+}
+
+void loop ()
+{
+bool result = OkButton;
+Serial.println(result);
+
+
+// if(CancelButton)
+// {
+//     Serial.println("Cancel pressed");
+// }
+
+// if(upButton)
+// {
+//     Serial.println("up pressed");
+// }
+// if(downButton)
+// {
+//     Serial.println("down pressed");
+// }
+
+}
+
