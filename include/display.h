@@ -14,7 +14,7 @@ void displayPregProfile();
 void displayCustumProfile();
 void displayMainMenu();
 profilName launchProfil();
-
+void resetTemperature ();
 
 
 void selectTemperature();
@@ -24,5 +24,13 @@ void displayTempMenu();
 void selectDuration();
 uint8_t setDuration();
 void displayDuration();
+void resetDuration();
+void displayDurationMenu();
+
+void selectNbResistance();
+numberOfResistance setNbResistance();
+void displayNbResistance();
+void resetNbResistance();
+void displayNbResistanceMenu();
 
 #endif

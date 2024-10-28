@@ -42,7 +42,7 @@ float measuredTemperature = 0;
 int preheatTemperatureStamp = 0;
 unsigned long preheatTimeStamp = 0;
 uint8_t lastTemperature = 0;
-
+uint8_t targetTemperature = 0;
 
 
 
@@ -55,19 +55,29 @@ bool readTemperature()
   // Check if reading was successful
 // Serial.println(tempSensor1);
 // Serial.println(tempSensor2);
-int sensorsOutputDifference = abs(tempSensor1 - tempSensor2);
 
+ int sensorsOutputDifference = abs(tempSensor1 - tempSensor2);
+  
   if (sensorsOutputDifference > MAX_SENSOR_DIFFERENCE)
-  {
+  { 
     // Serial.println("Sensors temperature difference too high ");
     if(tempSensor1 != DEVICE_DISCONNECTED_C) 
     {
         Serial.print("Temperature for the sensor 1 is: ");
-        Serial.println(tempSensor1);
+        Serial.println(tempSensor1);      
+      
     } 
     else
     {
         Serial.println("Error: Could not read the sensor 1");
+        lcd.clear();
+        lcd.setCursor(0, 1); 
+        lcd.print("SENSOR 1 ERROR");
+        while(OkButton())
+        {
+
+        }
+        lcd.clear();
     }
 
     if(tempSensor2 != DEVICE_DISCONNECTED_C) 
@@ -78,7 +88,21 @@ int sensorsOutputDifference = abs(tempSensor1 - tempSensor2);
     else
     {
         Serial.println("Error: Could not read the sensor 2");
+        lcd.print("SENSOR 2 ERROR");
+        while(OkButton())
+        {
+
+        }
+        lcd.clear();
     }
+    lcd.clear();
+    lcd.setCursor(0, 1); 
+    lcd.print("ONE FAULTY SENSOR");
+    while(OkButton())
+    {
+
+    }
+    lcd.clear();
     return false;
     }
  else
@@ -232,8 +256,10 @@ void temperatureProgressDisplay()
     if (lastTemperature != measuredTemperature)
     {
         lcd.setCursor(0, 1); 
-        lcd.print("T: ");
+        lcd.print("T:");
         lcd.print(measuredTemperature); 
+        lcd.print("/"); 
+        lcd.print(targetTemperature); 
         lcd.print((char)223); // ° symbol
         lcd.print("C"); 
     }
@@ -292,7 +318,7 @@ void loop() {
                 uint64_t duration3;
                 numberOfResistance activeResistance3; 
                 displayMainMenu();
-                while(OkButton)
+                while(OkButton())
                 {
                     //Serial.print("we're here");
                   main_Menu_Browse();
@@ -303,7 +329,7 @@ void loop() {
                 if (selectedProfilName == AILE )
                 {              
                     lcd.clear();
-                    lcd.setCursor(6, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(2, 0); // Set the cursor on the first column, first row
                     lcd.print("AILE");   
                     temperature1 = TEMPERATURE1_AILE;
                     duration1 = DURATION1_AILE;
@@ -319,7 +345,7 @@ void loop() {
                 else if (selectedProfilName == PREPREG )
                 {              
                     lcd.clear();
-                    lcd.setCursor(3, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(2, 0); // Set the cursor on the first column, first row
                     lcd.print("PREPREG");     
                     temperature1 = TEMPERATURE1_PREPREG;
                     duration1 = DURATION1_PREPREG;
@@ -331,7 +357,7 @@ void loop() {
                     duration3 = DURATION3_PREPREG;
                     activeResistance3 = NONE;  
                 }
-                else if (selectedProfilName == CUSTOM )
+                else if (selectedProfilName == CUSTOM)
                 {
                     #if 0 // test
                     temperature1 = 30;
@@ -346,61 +372,114 @@ void loop() {
 
                     #else
                     /* TEMPERATURE SELECT */
-                    lcd.clear();
+                    lcd.clear();                    
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T1"); 
-                    displayTempMenu();
-                    while(!OkButton)
+                   lcd.print("Select T1["); 
+                    lcd.print((char)223); // ° symbol
+                    lcd.print("C]"); 
+                    resetTemperature ();
+                    displayTempMenu();                    
+                    delay(200);
+                    while(OkButton())
                     {
                         selectTemperature();
                     }                    
                     temperature1 = setTemperature();
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T2"); 
+                    lcd.print("Select T2["); 
+                    lcd.print((char)223); // ° symbol
+                    lcd.print("C]"); 
+                    resetTemperature ();
                     displayTempMenu();
-                    while(!OkButton)
+                    delay(200);
+                    while(OkButton())
                     {
                         selectTemperature();
                     }
                     temperature2 = setTemperature();
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T3"); 
+                    lcd.print("Select T3["); 
+                    lcd.print((char)223); // ° symbol
+                    lcd.print("C]"); 
+                    resetTemperature ();
                     displayTempMenu();
-                    while(!OkButton)
+                    delay(200);
+                    while(OkButton())
                     {
                         selectTemperature();
                     }
                     temperature3 = setTemperature();
+
+                    
                     /* DURATION SELECT */
                     lcd.clear();
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T1"); 
-                    displayTempMenu();
-                    while(!OkButton)
+                    lcd.print("Select t1[hour]"); 
+                    resetDuration();
+                    displayDurationMenu();
+                    delay(200);
+                    while(OkButton())
                     {
                         selectDuration();
                     }                    
                     duration1 = setDuration();
-                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T2"); 
-                    displayTempMenu();
-                    while(!OkButton)
+                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.print("Select t2[hour]"); 
+                    resetDuration();
+                    displayDurationMenu();
+                    delay(200);
+                    while(OkButton())
                     {
                         selectDuration();
-                    }
+                    }                    
                     duration2 = setDuration();
-                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                    lcd.print("Select T3"); 
-                    displayTempMenu();
-                    while(!OkButton)
+                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.print("Select t3[hour]"); 
+                    resetDuration();
+                    displayDurationMenu();
+                    delay(200);
+                    while(OkButton())
                     {
                         selectDuration();
-                    }
+                    }                    
                     duration3 = setDuration();
+                    /* Number of Resistance*/
+                    lcd.clear();
+                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.print("Select NbRes1 "); 
+                    resetNbResistance();
+                    displayNbResistanceMenu();
+                    delay(200);
+                    while(OkButton())
+                    {
+                        selectNbResistance();
+                    }                    
+                    activeResistance1 = setNbResistance();
+                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.print("Select NbRes2 "); 
+                    resetNbResistance();
+                    displayNbResistanceMenu();
+                    delay(200);
+                    while(OkButton())
+                    {
+                        selectNbResistance();
+                    }                    
+                    activeResistance2 = setNbResistance();
+                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.print("Select NbRes3 "); 
+                    resetNbResistance();
+                    displayNbResistanceMenu();
+                    delay(200);
+                    while(OkButton())
+                    {
+                        selectNbResistance();
+                    }                    
+                    activeResistance3 = setNbResistance();
+                    
                     #endif
 
                     lcd.clear();
-                    lcd.setCursor(3, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(2, 0); // Set the cursor on the first column, first row
                     lcd.print("CUSTOM");
                     
                 }
@@ -413,8 +492,9 @@ void loop() {
                 
                 Serial.println("Phase 1");
                 currentState = STATE_PHASE1;  
-                lcd.setCursor(9, 0);
-                lcd.print(" P: 1/3");              
+                lcd.setCursor(11, 0);
+                lcd.print("P:1/3");     
+                targetTemperature = currentProfil.phase1.temperature;         
                 break;
 
             case STATE_PHASE1:
@@ -426,12 +506,11 @@ void loop() {
                 if (cooking_state == FINISHED)
                 {
                     preheatTemperatureStamp = measuredTemperature;
-                    preheatTimeStamp = millis ();
-                    
-                    
+                    preheatTimeStamp = millis ();                    
                     currentState = STATE_PHASE2;
-                    lcd.setCursor(9, 0);
-                    lcd.print(" P: 2/3"); 
+                    lcd.setCursor(11, 0);
+                    lcd.print("P:2/3");
+                    targetTemperature = currentProfil.phase2.temperature;  
                 }
                 else if (cooking_state==ERROR)
                 {
@@ -452,8 +531,9 @@ void loop() {
                     
                     
                     currentState = STATE_PHASE3;
-                    lcd.setCursor(9, 0);
-                    lcd.print(" P: 3/3"); 
+                    lcd.setCursor(11, 0);
+                    targetTemperature = currentProfil.phase3.temperature;  
+                    lcd.print("P:3/3"); 
                 }
                 else if (cooking_state == ERROR)
                 {
@@ -474,7 +554,7 @@ void loop() {
                     lcd.print("COOKING DONE");
                     lcd.setCursor(3, 1);
                     lcd.print("Press OK");
-                    while(!OkButton)
+                    while(OkButton())
                     {
                         
                     }
