@@ -77,7 +77,7 @@ bool readTemperature()
         lcd.clear();
         lcd.setCursor(0, 1); 
         lcd.print("SENSOR 1 ERROR");
-        while(OkButton())
+        while(!OkButton())
         {
 
         }
@@ -93,7 +93,7 @@ bool readTemperature()
     {
         Serial.println("Error: Could not read the sensor 2");
         lcd.print("SENSOR 2 ERROR");
-        while(OkButton())
+        while(!OkButton())
         {
 
         }
@@ -102,7 +102,7 @@ bool readTemperature()
     lcd.clear();
     lcd.setCursor(0, 1); 
     lcd.print("ONE FAULTY SENSOR");
-    while(OkButton())
+    while(!OkButton())
     {
 
     }
@@ -387,7 +387,7 @@ void loop() {
                 uint64_t duration3;
                 numberOfResistance activeResistance3; 
                 displayMainMenu();
-                while(OkButton())
+                while(!OkButton())
                 {
                     //Serial.print("we're here");
                   main_Menu_Browse();
@@ -449,7 +449,7 @@ void loop() {
                     resetTemperature ();
                     displayTempMenu();                    
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectTemperature();
                     }                    
@@ -461,7 +461,7 @@ void loop() {
                     resetTemperature ();
                     displayTempMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectTemperature();
                     }
@@ -473,7 +473,7 @@ void loop() {
                     resetTemperature ();
                     displayTempMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectTemperature();
                     }
@@ -487,7 +487,7 @@ void loop() {
                     resetDuration();
                     displayDurationMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectDuration();
                     }                    
@@ -497,7 +497,7 @@ void loop() {
                     resetDuration();
                     displayDurationMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectDuration();
                     }                    
@@ -507,7 +507,7 @@ void loop() {
                     resetDuration();
                     displayDurationMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectDuration();
                     }                    
@@ -519,17 +519,17 @@ void loop() {
                     resetNbResistance();
                     displayNbResistanceMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectNbResistance();
                     }                    
                     activeResistance1 = setNbResistance();
-                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
                     lcd.print("Select NbRes2 "); 
                     resetNbResistance();
                     displayNbResistanceMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectNbResistance();
                     }                    
@@ -539,7 +539,7 @@ void loop() {
                     resetNbResistance();
                     displayNbResistanceMenu();
                     delay(200);
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         selectNbResistance();
                     }                    
@@ -622,7 +622,7 @@ void loop() {
                     lcd.print("COOKING DONE");
                     lcd.setCursor(3, 1);
                     lcd.print("Press OK");
-                    while(OkButton())
+                    while(!OkButton())
                     {
                         
                     }

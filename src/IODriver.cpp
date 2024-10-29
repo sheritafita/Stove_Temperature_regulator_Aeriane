@@ -102,29 +102,24 @@ void activeThreeResistance()
 }
 
 
-// bool OkButton()
-// {
-// static int ok_lastState = HIGH;  // the previous state from the input pin  
-// int  currentState = digitalRead(OkButtonPin);
-//   if (ok_lastState == HIGH && currentState == LOW) // button pressed
-//    { 
-//     ok_lastState = currentState;
-//     return true;
-//     }
-//   else // button released
-//   {
-//     ok_lastState = currentState;
-//     return false;
-//    }
-
-// }
-
 bool OkButton()
 {
-
-  return digitalRead(OkButtonPin);
+static int ok_lastState = HIGH;  // the previous state from the input pin  
+int  currentState = digitalRead(OkButtonPin);
+  if (ok_lastState == HIGH && currentState == LOW) // button pressed
+   { 
+    ok_lastState = currentState;
+    return true;
+    }
+  else // button released
+  {
+    ok_lastState = currentState;
+    return false;
+   }
 
 }
+
+
 
 bool CancelButton()
 {
