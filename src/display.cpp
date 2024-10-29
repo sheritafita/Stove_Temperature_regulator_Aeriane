@@ -277,7 +277,7 @@ if (upButton()) {
 }
 
 
-numberOfResistance setNbResistance()
+numberOfResistance  setNbResistance()
 {
 switch (currentNbResistance)
 {
@@ -297,4 +297,19 @@ switch (currentNbResistance)
     // Serial.println("Stop heating default");
         NONE;
 }
+}
+
+
+bool confirmRestart()
+{
+  
+    // Restart the ESP32
+  if (OkButton())
+  {
+  esp_restart();
+  }
+  if (CancelButton)
+  {
+  return true;
+  }
 }

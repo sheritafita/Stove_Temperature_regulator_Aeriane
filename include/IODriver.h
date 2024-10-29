@@ -8,6 +8,7 @@
 const int I2C_SDA = 21;
 const int I2C_SCL = 22;
 const int OneWirePin = 25;
+const int CancelButtonPin = 27;
 
 void initRelay();
 

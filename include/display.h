@@ -33,4 +33,6 @@ void displayNbResistance();
 void resetNbResistance();
 void displayNbResistanceMenu();
 
+bool confirmRestart();
+
 #endif

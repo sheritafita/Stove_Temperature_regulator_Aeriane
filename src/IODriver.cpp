@@ -6,7 +6,7 @@
 
 
 const int OkButtonPin =  26;
-const int CancelButtonPin = 27;
+
 const int UpButtonPin = 9;
 const int DownButtonPin = 10;
 

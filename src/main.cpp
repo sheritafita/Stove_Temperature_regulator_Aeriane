@@ -38,11 +38,15 @@ DallasTemperature sensors(&oneWire);
 
 // COOKING
 cookingProfil currentProfil;
+cookingState currentState = STATE_IDLE;
+profilName selectedProfilName = CUSTOM; 
 float measuredTemperature = 0;
 int preheatTemperatureStamp = 0;
 unsigned long preheatTimeStamp = 0;
 uint8_t lastTemperature = 0;
 uint8_t targetTemperature = 0;
+
+bool restart = false;
 
 
 
@@ -265,7 +269,72 @@ void temperatureProgressDisplay()
     }
 }
 
+void restoreDisplayAfterInterrupt()
+{
 
+lcd.clear();
+switch (selectedProfilName)
+{
+    case CUSTOM:
+        lcd.setCursor(2, 0); 
+        lcd.print("CUSTOM");
+        break;
+    case AILE:
+        
+        lcd.setCursor(2, 0); // Set the cursor on the first column, first row
+        lcd.print("AILE"); 
+        break;
+    case PREPREG:
+        
+        lcd.setCursor(2, 0); // Set the cursor on the first column, first row
+        lcd.print("PREPREG");
+        break;
+    default:
+        break;
+}
+
+switch (selectedProfilName)
+{
+    case STATE_PHASE1:
+        lcd.setCursor(11, 0);
+        lcd.print("P:1/3"); 
+        break;
+    case STATE_PHASE2:
+        lcd.setCursor(11, 0);
+        lcd.print("P:2/3");  
+        break;
+    case STATE_PHASE3:
+        lcd.setCursor(11, 0);
+        lcd.print("P:3/3"); 
+        break;
+    default:
+        break;
+}
+
+}
+
+
+void IRAM_ATTR restartInterrupt() {
+if (currentState == STATE_PHASE1 || currentState == STATE_PHASE2 || currentState == STATE_PHASE3)
+{
+lcd.clear();
+lcd.setCursor(2, 0); // Set the cursor on the first column, first row
+detachInterrupt(digitalPinToInterrupt(CancelButtonPin));
+lcd.print("Redemarrer ?");
+delay(200);
+while (!restart)
+{
+   restart = confirmRestart();
+}
+attachInterrupt(digitalPinToInterrupt(CancelButtonPin), restartInterrupt, FALLING);
+restoreDisplayAfterInterrupt();
+}
+else
+{
+  esp_restart();
+}
+
+}
 
 void setup() 
 {
@@ -274,16 +343,16 @@ void setup()
  initDisplay();
  initRelay();
  init_GPIO();
+attachInterrupt(digitalPinToInterrupt(CancelButtonPin), restartInterrupt, FALLING);
 // init wifi & display
 }
 
 
 void loop() {
     
-    static cookingState currentState = STATE_IDLE;
+    
     static cookingState last_phase = STATE_IDLE;
     static uint64_t time_count = 0;
-    static profilName selectedProfilName = PREPREG; 
     // static profilName selectedProfilName = AILE;
     static uint8_t cooking_state = RUNNING;
     
@@ -374,7 +443,7 @@ void loop() {
                     /* TEMPERATURE SELECT */
                     lcd.clear();                    
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                   lcd.print("Select T1["); 
+                    lcd.print("Select T1["); 
                     lcd.print((char)223); // ° symbol
                     lcd.print("C]"); 
                     resetTemperature ();
@@ -433,7 +502,7 @@ void loop() {
                         selectDuration();
                     }                    
                     duration2 = setDuration();
-                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
                     lcd.print("Select t3[hour]"); 
                     resetDuration();
                     displayDurationMenu();
@@ -465,7 +534,7 @@ void loop() {
                         selectNbResistance();
                     }                    
                     activeResistance2 = setNbResistance();
-                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
+                    lcd.setCursor(0, 0); // Set the cursor on the first column, first row
                     lcd.print("Select NbRes3 "); 
                     resetNbResistance();
                     displayNbResistanceMenu();
@@ -528,7 +597,6 @@ void loop() {
                 {
                     preheatTemperatureStamp = measuredTemperature;
                     preheatTimeStamp = millis ();
-                    
                     
                     currentState = STATE_PHASE3;
                     lcd.setCursor(11, 0);
