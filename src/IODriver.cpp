@@ -47,38 +47,40 @@ void DeactivateAutomaticMode()
 void turn0nResistance1()
 {
     //Serial.println("Resistance 1 on");
-    relay2.turn_on_channel(1);
+    relay2.turn_off_channel(1);
 }
 
 void turn0nResistance2()
 {
-    relay2.turn_on_channel(2);
+    relay2.turn_off_channel(2);
 }
 
 void turn0nResistance3()
-{
-    relay2.turn_on_channel(3);
-}
-
-
-void turn0ffResistance1()
-{
-    relay2.turn_off_channel(1);
-}
-
-void turn0ffResistance2()
-{
-    relay2.turn_off_channel(2);
-}
-void turn0ffResistance3()
 {
     relay2.turn_off_channel(3);
 }
 
 
+void turn0ffResistance1()
+{
+    relay2.turn_on_channel(1);
+}
+
+void turn0ffResistance2()
+{
+    relay2.turn_on_channel(2);
+}
+void turn0ffResistance3()
+{
+    relay2.turn_on_channel(3);
+}
+
+
 void stopHeating()
 {
-    relay2.channelCtrl(0);   
+    turn0ffResistance1();
+    turn0ffResistance2();
+    turn0ffResistance3(); 
 }
 
 void activeOneResistance()

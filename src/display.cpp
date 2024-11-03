@@ -105,6 +105,7 @@ void main_Menu_Browse()
         currentMenu = 0;  // Loop back to first menu item
         }
     displayMainMenu();
+    delay(100);
   }
   if (downButton()) {
     
@@ -114,6 +115,7 @@ void main_Menu_Browse()
         currentMenu = maxMainMenuItems;  // Loop back to first menu item
         }
     displayMainMenu();
+    delay(100);
   }
   
   }
@@ -154,15 +156,16 @@ void resetTemperature ()
 
 void selectTemperature()
 {
-if (upButton()) {
+if (downButton()) {
     currentTemperature +=temperatureStep;
     if (currentTemperature > maxTemperature) 
         {
         currentTemperature = minTemperature;  // Loop back to first menu item
         }
     displayTempMenu();
+    delay(100);
   }
-  if (downButton()) {
+  if (upButton()) {
     
     currentTemperature -=temperatureStep ;
     if (currentTemperature <minTemperature ) 
@@ -170,6 +173,7 @@ if (upButton()) {
         currentTemperature = maxTemperature;  // Loop back to first menu item
         }
     displayTempMenu();
+    delay(100);
   }
 }
 
@@ -211,15 +215,16 @@ void resetDuration()
 void selectDuration()
 {
 
-if (upButton()) {
+if (downButton()) {
     currentDuration +=DurationStep ;
     if (currentDuration > maxDuration) 
         {
         currentDuration = minDuration;  // Loop back to first menu item
         }
     displayDurationMenu();
+    delay(100);
   }
-  if (downButton()) {
+  if (upButton()) {
     
     currentDuration -=DurationStep ;
     if (currentDuration < minDuration ) 
@@ -227,6 +232,7 @@ if (upButton()) {
         currentDuration = maxDuration;  // Loop back to first menu item
         }
     displayDurationMenu();
+    delay(100);
   }
 }
 
@@ -257,15 +263,18 @@ void resetNbResistance()
 void selectNbResistance()
 {
 
-if (upButton()) {
+if (downButton()) {
     currentNbResistance +=NbResistanceStep ;
     if (currentNbResistance > maxNbResistance) 
         {
         currentNbResistance = minNbResistance;  // Loop back to first menu item
         }
+    
     displayNbResistanceMenu();
+    delay(100);
+    
   }
-  if (downButton()) {
+  if (upButton()) {
     
     currentNbResistance -=NbResistanceStep ;
     if (currentNbResistance < minNbResistance ) 
@@ -273,6 +282,7 @@ if (upButton()) {
         currentNbResistance = maxNbResistance;  // Loop back to first menu item
         }
     displayNbResistanceMenu();
+    delay(100);
   }
 }
 
