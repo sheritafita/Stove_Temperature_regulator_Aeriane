@@ -65,6 +65,9 @@ bool readTemperature()
     {
         Serial.print("Temperature for the sensor 1 is: ");
         Serial.println(tempSensor1);      
+        lcd.clear();
+        lcd.setCursor(0, 1); 
+        lcd.print("1 FAULTY SENSOR");
       
     } 
     else
@@ -73,36 +76,28 @@ bool readTemperature()
         lcd.clear();
         lcd.setCursor(0, 1); 
         lcd.print("SENSOR 1 ERROR");
-        while(OkButton())
-        {
-
-        }
-        lcd.clear();
+        
     }
 
     if(tempSensor2 != DEVICE_DISCONNECTED_C) 
     {
         Serial.print("Temperature for the sensor 2 is: ");
         Serial.println(tempSensor1);
+        lcd.clear();
+        lcd.setCursor(0, 1); 
+        lcd.print("1 FAULTY SENSOR");
     } 
     else
     {
         Serial.println("Error: Could not read the sensor 2");
-        lcd.print("SENSOR 2 ERROR");
-        while(OkButton())
-        {
-
-        }
         lcd.clear();
+        lcd.setCursor(0, 1); 
+        lcd.print("SENSOR 2 ERROR");
+      
+        
     }
-    lcd.clear();
-    lcd.setCursor(0, 1); 
-    lcd.print("ONE FAULTY SENSOR");
-    while(OkButton())
-    {
-
-    }
-    lcd.clear();
+  
+  
     return false;
     }
  else
@@ -160,7 +155,9 @@ Serial.println(steady_state);
 if (!readTemperature())
    {
     // send email, sensor error
+    
     return ERROR;
+    
    }
 
 
@@ -191,13 +188,19 @@ if (steady_state)
     
     // send email overheating
     Serial.println("Error : overheating, heating stopped");
+    lcd.clear();
+    lcd.setCursor(0, 1); 
+    lcd.print("ERROR OVERHEAT");
     return ERROR;
    }
     /* HEATING DYNAMIC CHECK*/
-   if (time_elapsed > tenMinutes && temperature_evolution < 3 )
+   if (time_elapsed > tenMinutes && temperature_evolution < 2 )
    {
     // send email heating progress problem
     Serial.println("Error : heating took too long");
+    lcd.clear();
+    lcd.setCursor(0, 1); 
+    lcd.print("HEATER ERROR");
     return ERROR;
    }
 
@@ -208,12 +211,14 @@ if (steady_state)
         {
             Serial.println("Max temperature regulation reached, heating off");
             stopHeating();
+            delay(50);
         }
 
         if (regulationStared && measuredTemperature < temperature - 2)
         {
             Serial.println("Min temperature regulation reached, heating on");
             activateResistance(activeResistance);
+            delay(50);
         }
     }
     else
@@ -222,7 +227,7 @@ if (steady_state)
         {
         Serial.println("Max temperature regulation reached, heating off");
         stopHeating();
-        activateResistance(activeResistance);
+        delay(50);
         regulationStared = true;
         }
         }
@@ -238,6 +243,7 @@ else
             return ERROR;
         }
     activateResistance(activeResistance);
+    delay(50);
     regulationStared = false;
 }
     // Serial.print("Active resistance : ");
@@ -255,6 +261,7 @@ void temperatureProgressDisplay()
 {
     if (lastTemperature != measuredTemperature)
     {
+       
         lcd.setCursor(0, 1); 
         lcd.print("T:");
         lcd.print(measuredTemperature); 
@@ -262,6 +269,7 @@ void temperatureProgressDisplay()
         lcd.print(targetTemperature); 
         lcd.print((char)223); // ° symbol
         lcd.print("C"); 
+        
     }
 }
 
@@ -269,11 +277,14 @@ void temperatureProgressDisplay()
 
 void setup() 
 {
+
+ Wire.setClock(50000); // Set I2C speed to 100kH
  Serial.begin(115200);
  Serial.println("Starting");
  initDisplay();
  initRelay();
  init_GPIO();
+
 // init wifi & display
 }
 
@@ -302,8 +313,12 @@ void loop() {
             case STATE_ERROR:
                 // affichage + demande de restart => Idle
                 Serial.println("STATE ERROR");
-                activateResistance(NONE);
-                //currentState = STATE_IDLE;
+                stopHeating();
+                while(OkButton())
+                {
+
+                }
+                currentState = STATE_IDLE;
                 break;
 
             case STATE_PROFIL_SELECT:
@@ -374,7 +389,7 @@ void loop() {
                     /* TEMPERATURE SELECT */
                     lcd.clear();                    
                     lcd.setCursor(0, 0); // Set the cursor on the first column, first row
-                   lcd.print("Select T1["); 
+                    lcd.print("Select T1["); 
                     lcd.print((char)223); // ° symbol
                     lcd.print("C]"); 
                     resetTemperature ();
@@ -499,7 +514,7 @@ void loop() {
 
             case STATE_PHASE1:
                 Serial.println("STATE PHASE 1");               
-                       
+                
                 temperatureProgressDisplay();                  
                      
                 cooking_state = processCooking(&currentProfil,currentProfil.phase1.temperature,currentProfil.phase1.duration, currentProfil.phase1.activeResistance);
@@ -512,7 +527,7 @@ void loop() {
                     lcd.print("P:2/3");
                     targetTemperature = currentProfil.phase2.temperature;  
                 }
-                else if (cooking_state==ERROR)
+                if (cooking_state==ERROR)
                 {
                     currentState = STATE_ERROR;
                 }
@@ -535,7 +550,7 @@ void loop() {
                     targetTemperature = currentProfil.phase3.temperature;  
                     lcd.print("P:3/3"); 
                 }
-                else if (cooking_state == ERROR)
+                if (cooking_state == ERROR)
                 {
                     currentState = STATE_ERROR;
                 }
@@ -560,7 +575,7 @@ void loop() {
                     }
                     currentState = STATE_IDLE;
                 }
-                else if (cooking_state==ERROR)
+                if (cooking_state==ERROR)
                 {
                     currentState = STATE_ERROR;
                 }
