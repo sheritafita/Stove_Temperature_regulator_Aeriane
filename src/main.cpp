@@ -17,23 +17,30 @@
 #define MAX_SENSOR_DIFFERENCE 5
 
 #define ONE_WIRE_BUS OneWirePin
-
+// AILE
 #define TEMPERATURE1_AILE 30
 #define DURATION1_AILE 8
 #define TEMPERATURE2_AILE 40
 #define DURATION2_AILE 4
 #define TEMPERATURE3_AILE 50
 #define DURATION3_AILE 4
+#define ACTIVE_RESISTANCE_1_AILE ONE
+#define ACTIVE_RESISTANCE_2_AILE ONE
+#define ACTIVE_RESISTANCE_3_AILE TWO
 
+//PREPREG
 #define TEMPERATURE1_PREPREG 50
 #define DURATION1_PREPREG 3
 #define TEMPERATURE2_PREPREG 90
 #define DURATION2_PREPREG 6
 #define TEMPERATURE3_PREPREG 0
 #define DURATION3_PREPREG 0
+#define ACTIVE_RESISTANCE_1_PREPREG THREE
+#define ACTIVE_RESISTANCE_2_PREPREG THREE
+#define ACTIVE_RESISTANCE_3_PREPREG NONE
 
 #define HYSTERESIS_UP 0
-#define HYSTERESIS_DOWN 0
+#define HYSTERESIS_DOWN 1
 #define TEMPERATURE_DYNAMIC_THRESHOLD 0.3
 #define HEATING_TIMEOUT_MS 900000 //15mn
 
@@ -51,6 +58,8 @@ unsigned long preheatTimeStamp = 0;
 uint8_t lastTemperature = 0;
 uint8_t targetTemperature = 0;
 bool setPointReached = false;
+
+bool SensorErrorOccured = false;
 
 String errorLabel = "";
 String currentProfilName = "";
@@ -120,7 +129,31 @@ bool readTemperature()
     }
  else
  {
+
    measuredTemperature = (tempSensor1 + tempSensor2)/2;
+
+   if (measuredTemperature == DEVICE_DISCONNECTED_C)
+   {
+        stopHeating();
+        if (!SensorErrorOccured)
+        {
+            oneWire.reset();
+            delay(100);
+            readTemperature();
+            SensorErrorOccured = true;
+        }
+        else
+        {
+            Serial.println("Error: Sensors disconnected");
+            errorLabel = "Sensors disconnected, check One WIRE bus";
+            lcd.clear();
+            lcd.setCursor(0, 1);
+            lcd.print("SENSORS BUS ERR");
+            return false;
+        }
+
+   }
+
    //measuredTemperature = random(30, 100);
     Serial.print("Temperature: ");
     Serial.println(measuredTemperature);
@@ -161,8 +194,6 @@ switch (numberOfResistance)
 
 void sendData()
 {
-
-
  sendProfilData(currentProfilName,
                 targetTemperature,
                 measuredTemperature,
@@ -204,7 +235,9 @@ static float phaseTemperatureStamp = 0;
 unsigned long timeElapsed;
 float temperatureEvolution;
 
-uint8_t overheatThreshold = temperature + 10;
+// uint8_t overheatThreshold = temperature + 10;
+uint8_t DownThreshold = temperature - HYSTERESIS_DOWN;
+uint8_t UpThreshold = temperature + HYSTERESIS_UP;
 
 Serial.print("Steady state : ");
 Serial.println(steadyState);
@@ -221,9 +254,11 @@ if (!readTemperature())
 
 
 
-if (measuredTemperature > temperature && !steadyState)
+if (measuredTemperature > UpThreshold && !steadyState)
     {
     steadyState = true;
+    setPointReached = true;
+    stopHeating();
     Serial.println("Steady state reached");
     PhaseTimeStamp = millis();
     phaseTemperatureStamp = measuredTemperature;
@@ -235,11 +270,11 @@ if (steadyState)
     uint8_t temperature_evolution = measuredTemperature - PhaseTemperatureStamp;
     Serial.print("Time elapsed : ");
     Serial.println(timeElapsed);
-   if (timeElapsed >= duration)
-   {
-        steadyState = false;
-        return FINISHED;
-   }
+    if (timeElapsed >= duration)
+    {
+            steadyState = false;
+            return FINISHED;
+    }
 
    /* OVERHEAT CHECK*/
    if (measuredTemperature > overheatThreshold)
@@ -253,30 +288,26 @@ if (steadyState)
     return ERROR;
    }
     /* HEATING DYNAMIC CHECK*/
-   if (time_elapsed > tenMinutes && temperature_evolution < 2 )
-   {
-    // send email heating progress problem
-    Serial.println("Error : heating took too long");
-    lcd.clear();
-    lcd.setCursor(0, 1);
-    lcd.print("HEATER ERROR");
-    return ERROR;
-   }
+//     temperatureEvolution = abs(measuredTemperature - phaseTemperatureStamp);
+//    if (timeElapsed > HEATING_TIMEOUT_MS && temperatureEvolution <= TEMPERATURE_DYNAMIC_THRESHOLD)
+//    {
+//     dynamic_error_display();
+//     return ERROR;
+//    }
 
+    if (SensorErrorOccured) // if sensor error occured and mitigated by onewire.rest
+   {
+    activateResistance(activeResistance);
+    SensorErrorOccured = false;
+   }
     /* TEMPERATURE REGULATION*/
     if (setPointReached)
     {
-        if (measuredTemperature > temperature )
-        {
-            Serial.println("Max temperature regulation reached, heating off");
-            stopHeating();
-            delay(100);
 
-        }
-        uint8_t DownThreshold = temperature - HYSTERESIS_DOWN;
-        if (setPointReached && measuredTemperature < DownThreshold)
+        if (measuredTemperature < DownThreshold)
         {
             Serial.println("Min temperature regulation reached, heating on");
+            setPointReached = false;
             activateResistance(activeResistance);
             delay(100);
 
@@ -284,17 +315,18 @@ if (steadyState)
     }
     else
     {
-        if (measuredTemperature > temperature + 2)
-        {
-        Serial.println("Set point reached, heating off");
-        stopHeating();
-        delay(100);
+        if (measuredTemperature > UpThreshold )
+            {
+                Serial.println("Max temperature regulation reached, heating off");
+                setPointReached = true;
+                stopHeating();
+                delay(100);
 
-        setPointReached = true;
-        }
-        }
+            }
 
+        }
     }
+
 else
 {
     unsigned long time_elapsed = millis() - preheatTimeStamp;
@@ -513,13 +545,13 @@ void loop() {
                     lcd.print("AILE");
                     temperature1 = TEMPERATURE1_AILE;
                     duration1Hour = DURATION1_AILE;
-                    activeResistance1 = ONE;
+                    activeResistance1 = ACTIVE_RESISTANCE_1_AILE;
                     temperature2 = TEMPERATURE2_AILE;
                     duration2Hour = DURATION2_AILE;
-                    activeResistance2 = ONE;
+                    activeResistance2 = ACTIVE_RESISTANCE_2_AILE;
                     temperature3 = TEMPERATURE3_AILE;
-                    duration3 = DURATION3_AILE;
-                    activeResistance3 = TWO;
+                    duration3Hour = DURATION3_AILE;
+                    activeResistance3 = ACTIVE_RESISTANCE_3_AILE;
 
                 }
                 else if (selectedProfilName == PREPREG )
@@ -529,13 +561,13 @@ void loop() {
                     lcd.print("PREPREG");
                     temperature1 = TEMPERATURE1_PREPREG;
                     duration1Hour = DURATION1_PREPREG;
-                    activeResistance1 = THREE;
+                    activeResistance1 = ACTIVE_RESISTANCE_1_PREPREG;
                     temperature2 = TEMPERATURE2_PREPREG;
                     duration2Hour = DURATION2_PREPREG;
-                    activeResistance2 = THREE;
+                    activeResistance2 = ACTIVE_RESISTANCE_2_PREPREG;
                     temperature3 = TEMPERATURE3_PREPREG;
-                    duration3 = DURATION3_PREPREG;
-                    activeResistance3 = NONE;
+                    duration3Hour = DURATION3_PREPREG;
+                    activeResistance3 = ACTIVE_RESISTANCE_3_PREPREG;
                 }
                 else if (selectedProfilName == CUSTOM)
                 {
@@ -679,6 +711,8 @@ void loop() {
                     lcd.print("CUSTOM");
 
                 }
+                if (!readTemperature())  currentState = STATE_ERROR;
+                profil_init(&currentProfil, temperature1, duration1Hour,activeResistance1, temperature2, duration2Hour, activeResistance2, temperature3, duration3Hour, activeResistance3);
 
                 profil_init(&currentProfil, temperature1, duration1,activeResistance1, temperature2, duration2, activeResistance2, temperature3, duration3, activeResistance3);
                 // Serial.print("currentProfil.phase1.activeResistance");
@@ -725,7 +759,6 @@ void loop() {
                     preheatTemperatureStamp = measuredTemperature;
                     preheatTimeStamp = millis ();
 
-
                     currentState = STATE_PHASE3;
                     actualPhase = 3;
                     targetTemperature = currentProfil.phase3.temperature;
@@ -746,34 +779,64 @@ void loop() {
                 cookingState = processCooking(&currentProfil, currentProfil.phase3.temperature, currentProfil.phase3.duration, currentProfil.phase3.activeResistance);
                 if (cookingState==FINISHED)
                 {
-                    // send email & display
                     stopHeating();
-                    delay(50);
                     lcd.clear();
-                    lcd.setCursor(0, 0);
-                    lcd.print("COOKING DONE");
+                    lcd.setCursor(2, 0);
+                    lcd.print("COOK FINISHED");
                     lcd.setCursor(3, 1);
-                    lcd.print("Press OK");
-                    sendEmail(errorLabel,currentProfilName, errorOccured);
-                    delay(50);
-                    while(!OkButton())
-                    {
+                    lcd.print("COOLING ...");
+                    currentState = COOLING;
 
-                    }
-                    currentState = STATE_IDLE;
                 }
                 if (cookingState==ERROR)
                 {
                     currentState = STATE_ERROR;
                 }
                 break;
+
+            case COOLING :
+                if (!readTemperature())
+                {
+                    currentState = STATE_ERROR;
+                }
+                else
+                {
+                    if (measuredTemperature > 30)
+                    {
+                         if (lastTemperature != measuredTemperature)
+                            {
+                                lcd.setCursor(0, 1);
+                                lcd.print("T:");
+                                lcd.print(measuredTemperature);
+                                lcd.print((char)223); // ° symbol
+                                lcd.print("C");
+                            }
+                    }
+                    else
+                        {
+                        errorLabel = "SUCCES";
+                        errorOccured = false;
+                        delay(50);
+                        lcd.clear();
+                        lcd.setCursor(0, 0);
+                        lcd.print("COOKING DONE");
+                        lcd.setCursor(3, 1);
+                        lcd.print("Press OK");
+                        sendEmail(errorLabel,currentProfilName, errorOccured);
+                        delay(50);
+                        while(!OkButton())
+                        {
+
+                        }
+                        currentState = STATE_IDLE;
+                        }
+                }
+
             default:
                 currentState = STATE_IDLE;
         }
 
-        // send data
-        // check connection error
-    //  }
+        updateWebData();
 
 }
 

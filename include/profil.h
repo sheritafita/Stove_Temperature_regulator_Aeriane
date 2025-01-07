@@ -6,7 +6,7 @@
 typedef enum {
     NONE,
     ONE,
-    TWO, 
+    TWO,
     THREE
 }numberOfResistance;
 
@@ -35,7 +35,8 @@ typedef enum {
     STATE_PROFIL_SELECT,
     STATE_PHASE1,
     STATE_PHASE2,
-    STATE_PHASE3
+    STATE_PHASE3,
+    COOLING
 } cookingState;
 
 // Function declarations
