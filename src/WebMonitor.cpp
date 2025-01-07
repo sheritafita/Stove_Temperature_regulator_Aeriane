@@ -116,8 +116,8 @@ void sendProfilData(const String &profilName,
     jsonPayload += "\"nR2\":" + String(nR2) + ",";
     jsonPayload += "\"T3_temp\":" + String(T3_temp) + ",";
     jsonPayload += "\"T3_duration\":" + String(T3_duration) + ",";
-    jsonPayload += "\"nR3\":" + String(nR3);
-    jsonPayload += "\"set_point_is_eached\":" + String(setPointReached ? "true" : "false");
+    jsonPayload += "\"nR3\":" + String(nR3)+ ",";
+    jsonPayload += "\"set_point_is_reached\":" + String(setPointReached ? "true" : "false");
     jsonPayload += "}";
 
     // Debugging: Print JSON payload
