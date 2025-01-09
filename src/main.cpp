@@ -74,18 +74,24 @@ uint64_t duration1Hour;
 uint64_t duration2Hour;
 uint64_t duration3Hour;
 
+
+void resetOneWire()
+{
+    oneWire.reset();
+    Serial.print("Onewire restarted");
+    delay(100);
+    SensorErrorOccured = true;
+
+}
 bool readTemperature()
 {
- sensors.requestTemperatures();
- float tempSensor1 = sensors.getTempCByIndex(0);
- float tempSensor2 = sensors.getTempCByIndex(1);
+    sensors.requestTemperatures();
+    float tempSensor1 = sensors.getTempCByIndex(0);
+    float tempSensor2 = sensors.getTempCByIndex(1);
 
- int sensorsOutputDifference = abs(tempSensor1 - tempSensor2);
+    int sensorsOutputDifference = abs(tempSensor1 - tempSensor2);
 
-  if (sensorsOutputDifference > MAX_SENSOR_DIFFERENCE)
-  {
-
-    // Serial.println("Sensors temperature difference too high ");
+        // Serial.println("Sensors temperature difference too high ");
     if(tempSensor1 != DEVICE_DISCONNECTED_C)
     {
         Serial.print("Temperature for the sensor 1 is: ");
@@ -94,67 +100,64 @@ bool readTemperature()
     }
     else
     {
-        Serial.println("Error: Could not read the sensor 1");
-        lcd.clear();
-        lcd.setCursor(0, 1);
-        lcd.print("SENS1 COM ERROR");
-        errorLabel = "Sensor 1 disconnected";
-        return false;
+        if (!SensorErrorOccured)
+            {
+                resetOneWire();
+                readTemperature();
+            }
+        else
+            {
+                Serial.println("Error: Could not read the sensor 1");
+                lcd.clear();
+                lcd.setCursor(0, 1);
+                lcd.print("SENS1 COM ERROR");
+                errorLabel = "Sensor 1 disconnected";
+                return false;
+            }
     }
 
     if(tempSensor2 != DEVICE_DISCONNECTED_C)
-    {
-        Serial.print("Temperature for the sensor 2 is: ");
-        Serial.println(tempSensor2);
-    }
-    else
-    {
-        Serial.println("Error: Could not read the sensor 1");
-        lcd.clear();
-        lcd.setCursor(0, 1);
-        lcd.print("SENS2 COM ERROR");
-        errorLabel = "Sensor 2 disconnected";
-        return false;
-
-    }
-    errorLabel = "Sensors return different values";
-    lcd.clear();
-    lcd.setCursor(0, 1);
-    lcd.print("SENSOR 1/2 FAULTY");
-    return false;
-    }
- else
- {
-
-   measuredTemperature = (tempSensor1 + tempSensor2)/2;
-
-   if (measuredTemperature == DEVICE_DISCONNECTED_C)
-   {
-        stopHeating();
-        if (!SensorErrorOccured)
         {
-            oneWire.reset();
-            delay(100);
-            readTemperature();
-            SensorErrorOccured = true;
+            Serial.print("Temperature for the sensor 2 is: ");
+            Serial.println(tempSensor2);
         }
-        else
+    else
         {
-            Serial.println("Error: Sensors disconnected");
-            errorLabel = "Sensors disconnected, check One WIRE bus";
+        if (!SensorErrorOccured)
+            {
+                resetOneWire();
+                readTemperature();
+
+            }
+        else
+            {
+            Serial.println("Error: Could not read the sensor 1");
             lcd.clear();
             lcd.setCursor(0, 1);
-            lcd.print("SENSORS BUS ERR");
+            lcd.print("SENS2 COM ERROR");
+            errorLabel = "Sensor 2 disconnected";
+            return false;
+            }
+        }
+
+    if (sensorsOutputDifference > MAX_SENSOR_DIFFERENCE)
+        {
+            Serial.println("Error: Sensors return different values");
+            lcd.clear();
+            lcd.setCursor(0, 1);
+            lcd.print("SENS DIFF ERROR");
+            errorLabel = "Difference between sensors value too important, 1: "
+             + String(tempSensor1, 2) + "°C, 2: "
+             + String(tempSensor2, 2) + "°C";
+
+            const char* errorLabelChar = errorLabel.c_str();  // Convert to char*
             return false;
         }
 
-   }
-
-   //measuredTemperature = random(30, 100);
+    measuredTemperature = (tempSensor1 + tempSensor2)/2;
     Serial.print("Temperature: ");
     Serial.println(measuredTemperature);
     return true;
-    }
 }
 
 
@@ -407,10 +410,11 @@ void loop() {
 
             case STATE_ERROR:
                 // affichage + demande de restart => Idle
+                stopHeating();
                 errorOccured = true;
                 sendEmail(errorLabel, currentProfilName, errorOccured);
                 Serial.println("STATE ERROR");
-                stopHeating();
+
                 delay(50);
                 while(!OkButton())
                 {
