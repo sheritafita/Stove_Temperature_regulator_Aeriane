@@ -28,10 +28,7 @@ void startWebMonitoring() {
   }
 }
 
-bool getWifiStatus()
-{
-    return WiFi.status() == WL_CONNECTED;
-}
+
 
 void sendEmail(const String &errorMessage, const String &cookProfile, bool cookError) {
   if (WiFi.status() == WL_CONNECTED) {
@@ -144,7 +141,7 @@ void sendProfilData(const String &profilName,
 }
 
 void initWifi() {
-    WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password);
   lcd.clear();
   lcd.setCursor(0, 0); //
   lcd.print("WIFI ");
@@ -152,5 +149,15 @@ void initWifi() {
   lcd.print("connecting ...");
   Serial.println("Connecting to WiFi...");
   delay(3000);
+}
+
+
+void ReconnectIfWifiDisconnected()
+{
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        WiFi.reconnect();
+        Serial.println("Reconnecting to WiFi...");
+    }
 }
 

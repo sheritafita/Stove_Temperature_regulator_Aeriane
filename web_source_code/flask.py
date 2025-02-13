@@ -11,6 +11,7 @@ from datetime import datetime
 from PIL import Image
 from zoneinfo import ZoneInfo
 import csv
+from threading import Timer
 
 
 local_tz = ZoneInfo('Europe/Brussels')
@@ -227,7 +228,7 @@ def reportInactivityTimeout():
     print("No activity detected for 5 minutes. Executing report...")
     global cook_error, error_message
     cook_error = True
-    error_message = "No activity detected from the oven for 5 minutes"  # Default to empty string
+    error_message = "No update from the oven for 5 minutes"
     generate_final_plot_and_send()
 
 
@@ -292,15 +293,14 @@ def update_profile_data():
 
 
 
-    # global inactivity_timer
-    # # Reset the inactivity timer
-    # if inactivity_timer is not None and monitoring_active:
-    #     inactivity_timer.cancel()  # Cancel the previous timer
+    global inactivity_timer
+    # Reset the inactivity timer
+    if inactivity_timer is not None and monitoring_active:
+        inactivity_timer.cancel()  # Cancel the previous timer
 
     # Start a new timer for 5 minutes
-   # inactivity_timer = Timer(300, reportInactivityTimeout)
-   # inactivity_timer.start()
-
+    inactivity_timer = Timer(300, reportInactivityTimeout)
+    inactivity_timer.start()
 
     return {"message": "Profile data updated successfully"}, 200
 
@@ -354,4 +354,5 @@ def data():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
 
