@@ -6,6 +6,23 @@
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+// Button
+const int OkButtonPin =  26;
+const int CancelButtonPin = 27;
+const int UpButtonPin = 9;
+const int DownButtonPin = 10;
+
+// Relay module
+
+const int relay2_1 = 13;
+const int relay2_2 = 5;
+const int relay2_3 = 2;
+
+
+
+>>>>>>> 8f80f66f4c6342970f765635d5f8c8b36718842c
 const int I2C_SDA = 21;
 const int I2C_SCL = 22;
 const int OneWirePin = 25;

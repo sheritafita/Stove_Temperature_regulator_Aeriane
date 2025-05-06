@@ -6,8 +6,11 @@
 const char* ssid = "aeriane";
 const char* password = "gembloux5030";
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 8f80f66f4c6342970f765635d5f8c8b36718842c
 HTTPClient http;
 
 
@@ -150,7 +153,11 @@ void initWifi() {
   lcd.setCursor(0, 1); //
   lcd.print("connecting ...");
   Serial.println("Connecting to WiFi...");
+<<<<<<< HEAD
   delay(2000);
+=======
+  delay(3000);
+>>>>>>> 8f80f66f4c6342970f765635d5f8c8b36718842c
 }
 
 
@@ -163,6 +170,7 @@ void ReconnectIfWifiDisconnected()
     }
 }
 
+<<<<<<< HEAD
 
 
 void RssiDisplay() {
@@ -237,3 +245,5 @@ void RssiDisplay() {
 }
 
 
+=======
+>>>>>>> 8f80f66f4c6342970f765635d5f8c8b36718842c
