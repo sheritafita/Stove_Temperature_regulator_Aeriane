@@ -161,3 +161,77 @@ void ReconnectIfWifiDisconnected()
     }
 }
 
+
+
+void RssiDisplay() {
+    int rssi = -100;
+
+    if (WiFi.status() == WL_CONNECTED) {
+        rssi = WiFi.RSSI();
+    }
+
+    // Set custom characters
+    byte RfSymbol[] = {0x1F, 0x15, 0x0E, 0x04, 0x04, 0x04, 0x04, 0x04};
+    byte Col1[8] = {0};
+    byte Col2[8] = {0};
+
+    if (rssi < -87 || rssi == 0) {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x11, 0x0A, 0x04, 0x0A, 0x11};
+        byte tempCol2[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else if (rssi < -80) {
+        byte tempCol1[] = {0x00, 0x00, 0x10, 0x10, 0x00, 0x00, 0x10, 0x10};
+        byte tempCol2[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else if (rssi < -70) {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x14, 0x14};
+        byte tempCol2[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else if (rssi < -67) {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x15, 0x15};
+        byte tempCol2[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else if (rssi < -60) {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x15, 0x15};
+        byte tempCol2[] = {0x00, 0x00, 0x00, 0x10, 0x10, 0x10, 0x10, 0x10};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else if (rssi < -50) {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x15, 0x15};
+        byte tempCol2[] = {0x00, 0x00, 0x04, 0x14, 0x14, 0x14, 0x14, 0x14};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+    else {
+        byte tempCol1[] = {0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x15, 0x15};
+        byte tempCol2[] = {0x01, 0x01, 0x05, 0x15, 0x15, 0x15, 0x15, 0x15};
+        memcpy(Col1, tempCol1, 8);
+        memcpy(Col2, tempCol2, 8);
+    }
+
+    // Create custom characters
+    lcd.createChar(0, RfSymbol);
+    lcd.createChar(1, Col1);
+    lcd.createChar(2, Col2);
+
+
+    lcd.setCursor(14, 1);
+    lcd.write(0);
+
+    lcd.setCursor(15, 1);
+    lcd.write(1);
+
+    lcd.setCursor(16, 1);
+    lcd.write(2);
+}
+
+

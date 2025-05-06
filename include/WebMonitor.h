@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 void initWifi();
+void RssiDisplay();
 void ReconnectIfWifiDisconnected();
 void startWebMonitoring();
 void sendEmail(const String &errorMessage, const String &cookProfile, bool cookError);

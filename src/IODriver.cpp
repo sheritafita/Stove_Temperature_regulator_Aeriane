@@ -14,14 +14,14 @@ void init_GPIO ()
     pinMode(relay2_1, OUTPUT);
     pinMode(relay2_2, OUTPUT);
     pinMode(relay2_3, OUTPUT);
+    pinMode(Led_pin, OUTPUT);
+
 }
 
 void initRelay()
 {
     stopHeating();
-
 }
-
 
 void turn0nResistance1()
 {
@@ -75,6 +75,7 @@ void activeOneResistance()
 }
 void activeTwoResistance()
 {
+
     turn0nResistance1();
     turn0nResistance2();
     turn0ffResistance3();
@@ -82,6 +83,7 @@ void activeTwoResistance()
 }
 void activeThreeResistance()
 {
+
     turn0nResistance1();
     turn0nResistance2();
     turn0nResistance3();
@@ -90,19 +92,18 @@ void activeThreeResistance()
 
 bool OkButton()
 {
-static int Ok_lastState = HIGH;
-int  currentState = digitalRead(OkButtonPin);
-  if (Ok_lastState == HIGH && currentState == LOW)
+  static int OKLastState = HIGH;
+  int  currentState = digitalRead(OkButtonPin);
+  if (OKLastState == HIGH && currentState == LOW)
   {
-    Ok_lastState = currentState;
+    OKLastState = currentState;
     return true;
   }
-
   else
-    {
-    Ok_lastState = currentState;
+  {
+    OKLastState = currentState;
     return false;
-    }
+  }
 }
 
 bool CancelButton()
