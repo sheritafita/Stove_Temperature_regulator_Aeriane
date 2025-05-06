@@ -21,6 +21,13 @@ void init_GPIO ()
     pinMode(CancelButtonPin, INPUT_PULLUP);
     pinMode(UpButtonPin, INPUT_PULLUP);
     pinMode(DownButtonPin, INPUT_PULLUP);
+<<<<<<< HEAD
+=======
+    pinMode(relay2_1, OUTPUT);
+    pinMode(relay2_2, OUTPUT);
+    pinMode(relay2_3, OUTPUT);
+    pinMode(Led_pin, OUTPUT);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 void initRelay()
@@ -28,8 +35,11 @@ void initRelay()
     relay1.begin(0x11);
     relay2.begin(0x12);
     stopHeating();
+<<<<<<< HEAD
     ActivateAutomaticMode();
     
+=======
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 void ActivateAutomaticMode()
@@ -46,33 +56,63 @@ void DeactivateAutomaticMode()
 
 void turn0nResistance1()
 {
+<<<<<<< HEAD
     //Serial.println("Resistance 1 on");
     relay2.turn_on_channel(1);
+=======
+    digitalWrite(relay2_1, LOW);
+    delay(100);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 void turn0nResistance2()
 {
+<<<<<<< HEAD
     relay2.turn_on_channel(2);
+=======
+   digitalWrite(relay2_2, LOW);
+   delay(100);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 void turn0nResistance3()
 {
+<<<<<<< HEAD
     relay2.turn_on_channel(3);
+=======
+   digitalWrite(relay2_3, LOW);
+   delay(100);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 
 void turn0ffResistance1()
 {
+<<<<<<< HEAD
     relay2.turn_off_channel(1);
+=======
+    digitalWrite(relay2_1, HIGH);
+    delay(100);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 void turn0ffResistance2()
 {
+<<<<<<< HEAD
     relay2.turn_off_channel(2);
 }
 void turn0ffResistance3()
 {
     relay2.turn_off_channel(3);
+=======
+   digitalWrite(relay2_2, HIGH);
+   delay(100);
+}
+void turn0ffResistance3()
+{
+  digitalWrite(relay2_3, HIGH);
+  delay(100);
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
 }
 
 
@@ -89,6 +129,7 @@ void activeOneResistance()
 }
 void activeTwoResistance()
 {
+
     turn0nResistance1();
     turn0nResistance2();
     turn0ffResistance3();
@@ -96,6 +137,7 @@ void activeTwoResistance()
 }
 void activeThreeResistance()
 {
+
     turn0nResistance1();
     turn0nResistance2();
     turn0nResistance3();
@@ -104,12 +146,27 @@ void activeThreeResistance()
 
 bool OkButton()
 {
+<<<<<<< HEAD
 static int ok_lastState = HIGH;  // the previous state from the input pin  
 int  currentState = digitalRead(OkButtonPin);
   if (ok_lastState == HIGH && currentState == LOW) // button pressed
    { 
     ok_lastState = currentState;
     return true;
+=======
+static int OkLastState = HIGH;
+int  currentState = digitalRead(OkButtonPin);
+  if (OkLastState == HIGH && currentState == LOW)
+  {
+    OkLastState = currentState;
+    return true;
+  }
+
+  else
+    {
+    OkLastState = currentState;
+    return false;
+>>>>>>> 3de042f (Enable test mode, toggle 3 resistances each 5s)
     }
   else // button released
   {

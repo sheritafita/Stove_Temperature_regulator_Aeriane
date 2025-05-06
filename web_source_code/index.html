@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 90px;
+            height: auto;
+            z-index: 10;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        #statusContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 5px 0;
+        font-size: 18px;
+        }
+
+        #statusContainer span:first-child {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+        #statusLabel,
+        #status {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #status {
+            margin-left: 5px;
+        }
+
+        #heatStatusContainer {
+        margin: 20px;
+        margin-top: 0;
+        margin-bottom: 0;
+        display: flex;
+        align-items: flex-start;
+        overflow: visible;
+        }
+
+        #heatStatusContainer span:first-child {
+            font-weight: bold;
+            margin-right: 5px;
+            display: inline;
+            visibility: visible;
+
+        }
+
+        #profilStatusContainer {
+            margin: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #tableContainer {
+            display: none;
+            margin-top: 0px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px auto;
+            min-width: 600px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+
+         canvas {
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+
+            .logo {
+                width: 80px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            #profilStatusContainer {
+                font-size: 14px;
+            }
+
+            #status {
+                font-size: 16px;
+            }
+            #heatStatusContainer {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 4px;
+            }
+
+            .logo {
+                width: 70px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            #profilStatusContainer {
+                font-size: 12px;
+            }
+
+            /*#status {
+                font-size: 14px;
+            }*/
+        }
+
+        @media (max-width: 600px) {
+        #statusContainer {
+            font-size: 16px; /* Slightly smaller size for small screens */
+        }
+
+        #statusLabel,
+        #status {
+            font-size: 16px; /* Match size in the container */
+        }
+     }
+
+        @media (max-width: 480px) {
+            table {
+                font-size: 10px;
+            }
+
+            th, td {
+                padding: 3px;
+            }
+
+            h2 {
+                font-size: 16px;
+            }
+
+            .logo {
+                width: 60px;
+            }
+
+            #tableContainer {
+                min-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='Logo_aériane.jpg') }}" alt="Logo" class="logo">
+
+    <h2>Oven temperature regulation</h2>
+
+     <div id="statusContainer" class="status-container">
+        <span>Status:</span>
+        <span id="status" role="status" aria-live="polite">Inactive</span>
+    </div>
+
+ <div id="heatStatusContainer">
+    <span>Process status :</span>
+    <span id="heatStatus">Disabled</span>
+    </div>
+
+<div id="profilStatusContainer">
+    <div id="PhaseRow">
+        <span><b>Phase :</b> </span>
+        <span id="actualPhase">--</span> /
+        <span id="numberOfPhase">--</span>
+    </div>
+    <div id="elapsedTimeRow">
+        <span><b>Elapsed time :</b> </span>
+        <span id="elapsedTime">--:--:--</span> /
+        <span id="profilDuration">--</span> h
+    </div>
+    <div id="temperatureRow">
+        <span><b>Temperature :</b> </span>
+        <span id="measuredTemperature">--</span> /
+        <span id="targetTemperature">--</span> °C
+    </div>
+</div>
+
+ <div id="tableContainer">
+        <table>
+            <thead>
+                <tr>
+                    <th>Profile</th>
+                    <th>T1[°C]</th>
+                    <th>t1[h]</th>
+                    <th>nR1</th>
+                    <th>T2[°C]</th>
+                    <th>t2[h]</th>
+                    <th>nR2</th>
+                    <th>T3[°C]</th>
+                    <th>t3[h]</th>
+                    <th>nR3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="tableProfile">--</td>
+                    <td id="tableT1">--</td>
+                    <td id="tableT1Duration">--</td>
+                    <td id="tableNR1">--</td>
+                    <td id="tableT2">--</td>
+                    <td id="tableT2Duration">--</td>
+                    <td id="tableNR2">--</td>
+                    <td id="tableT3">--</td>
+                    <td id="tableT3Duration">--</td>
+                    <td id="tableNR3">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <canvas id="tempChart" width="400" height="200"></canvas>
+
+
+
+
+    <script>
+        const ctx = document.getElementById('tempChart').getContext('2d');
+        const tempChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Duration [h], Temperature (°C)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Duration [h]',
+                            font: {
+                                size: 18
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Temperature [°C]',
+                            font: {
+                                size: 18
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        let startTime = null;
+        let isActive = false;
+        let setPointIsReached= false;
+        let targetTemperature = null;
+        let measuredTemperature = null;
+        let actualPhase = null;
+        let numberOfPhase = null;
+        let profilName = null;
+        let profilDuration = null;
+        let elapsedTimeInterval = null;
+        let lastChartUpdateTime = null; // Timestamp to track the last chart update
+        let temperature1 = null;
+        let duration1 = null;
+        let resistance1 = null;
+        let temperature2 = null;
+        let duration2 = null;
+        let resistance2 = null;
+        let temperature3 = null;
+        let duration3 = null;
+        let resistance3 = null;
+
+
+        async function fetchData() {
+            try {
+                const response = await fetch('https://four.aeriane.com/update_monitored_profil_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                console.log(data);
+
+                // Update variables
+                startTime = data.start_time ? new Date(data.start_time) : null;
+                isActive = data.is_active || false;
+                targetTemperature = data.target_temperature || '--';
+                measuredTemperature = data.measured_temperature || '--';
+                actualPhase = data.actual_phase || '--';
+                numberOfPhase = data.number_of_phase || '--';
+                profilDuration = data.profil_duration || '--';
+                setPointIsReached = data.set_point_is_reached || false;
+                temperature1 = data.temperature1;
+                profilName = data.profil_name || '--';
+                temperature1 = data.T1_temp || '--';
+                duration1 = data.T1_duration || '--';
+                resistance1 = data.nR1 || '--';
+                temperature2 = data.T2_temp || '--';
+                duration2 = data.T2_duration || '--';
+                resistance2 = data.nR2 || '--';
+                temperature3 = data.T3_temp || '--';
+                duration3 = data.T3_duration || '--';
+                resistance3 = data.nR3 || '--';
+
+                // Update DOM elements
+                const statusElement = document.getElementById('status');
+                const heatStatusContainer = document.getElementById('heatStatusContainer');
+                const profilStatusContainer = document.getElementById('profilStatusContainer');
+                const tableContainer = document.getElementById('tableContainer');
+                const chartContainer = document.getElementById('tempChart');
+                statusElement.textContent = isActive ? 'Active' : 'Inactive';
+                statusElement.style.color = isActive ? 'green' : 'red'; // Set text color based on status
+                const heatStatusElement = document.getElementById('heatStatus');
+                heatStatusElement.textContent = setPointIsReached ? 'Cooling' : 'Heating';
+                heatStatusElement.style.color = setPointIsReached ? 'green' : 'red';
+
+                if (isActive) {
+                    profilStatusContainer.style.display = 'block';
+                    tableContainer.style.display = 'block';  // Show the table when active
+                    chartContainer.style.display = 'block'; // Show the chart when active
+                    heatStatusContainer.style.display = 'block';
+
+                    document.getElementById('elapsedTime').textContent = startTime
+                        ? new Date(Date.now() - startTime.getTime()).toISOString().substr(11, 8)
+                        : '--:--:--';
+                    document.getElementById('targetTemperature').textContent = targetTemperature;
+                    document.getElementById('measuredTemperature').textContent = measuredTemperature;
+                    document.getElementById('actualPhase').textContent = actualPhase;
+                    document.getElementById('numberOfPhase').textContent = numberOfPhase;
+                    document.getElementById('profilDuration').textContent = profilDuration;
+
+                    // Update the table values with each fetch
+                    document.getElementById('tableProfile').textContent = profilName || '--';
+                    document.getElementById('tableT1').textContent = temperature1 || '--';
+                    document.getElementById('tableT1Duration').textContent = duration1 || '--';
+                    document.getElementById('tableNR1').textContent = resistance1 || '--';
+                    document.getElementById('tableT2').textContent = temperature2 || '--';
+                    document.getElementById('tableT2Duration').textContent = duration2 || '--';
+                    document.getElementById('tableNR2').textContent = resistance2 || '--';
+                    document.getElementById('tableT3').textContent = temperature3 || '--';
+                    document.getElementById('tableT3Duration').textContent = duration3 || '--';
+                    document.getElementById('tableNR3').textContent = resistance3 || '--';
+
+                    // Update chart every minute
+                    const now = Date.now();
+                    if (!lastChartUpdateTime || now - lastChartUpdateTime >= 60000) { // 1 minute = 60000 ms
+                        tempChart.data.labels = data.time_in_hours;
+                        tempChart.data.datasets[0].data = data.temperature_data;
+                        tempChart.update();
+
+                        lastChartUpdateTime = now; // Update the timestamp
+                    }
+
+                    const tableRow = document.querySelector('tbody tr');
+                     // Remove all highlights first
+                    tableRow.querySelectorAll('td').forEach(td => td.classList.remove('highlight'));
+
+                    // Highlight specific columns based on actualPhase
+                    if (actualPhase === 1) {
+                        tableRow.querySelectorAll('td:nth-child(n+2):nth-child(-n+4)').forEach(td => td.classList.add('highlight'));
+                    } else if (actualPhase === 2) {
+                        tableRow.querySelectorAll('td:nth-child(n+5):nth-child(-n+7)').forEach(td => td.classList.add('highlight'));
+                    } else if (actualPhase === 3) {
+                        tableRow.querySelectorAll('td:nth-last-child(-n+3)').forEach(td => td.classList.add('highlight'));
+                    }
+                    else if (actualPhase === 4) {
+                        phaseRow.style.display = "none";
+                    }
+                }
+                else {
+                    startTime = null;
+                    profilStatusContainer.style.display = 'none';
+                    tableContainer.style.display = 'none';  // Hide the table when inactive
+                    chartContainer.style.display = 'none'; // Hide the chart when inactive
+                    heatStatusContainer.style.display = 'none';
+                    let lastChartUpdateTime = null;
+                    document.getElementById('elapsedTime').textContent = '--:--:--';
+                    tempChart.data.labels = [];
+                    tempChart.data.datasets[0].data = [];
+                    tempChart.update();
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('status').textContent = 'Error fetching data';
+                profilStatusContainer.style.display = 'none';
+                tableContainer.style.display = 'none';  // Hide the table when inactive
+                chartContainer.style.display = 'none'; // Hide the chart when inactive
+            }
+        }
+
+
+        // Timer management for updates
+        function startTimers() {
+            if (elapsedTimeInterval) return; // Skip if already running
+            elapsedTimeInterval = setInterval(fetchData, 1000);
+        }
+
+        // Initialize logic
+        (async function initialize() {
+            await fetchData();
+            startTimers();
+        })();
+    </script>
+</body>
+</html>

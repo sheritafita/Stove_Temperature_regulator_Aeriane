@@ -86,6 +86,7 @@ lcd.write(byte(1));   // Right arrow
 
 void  initDisplay()
 {
+    Wire.setPins(I2C_SDA, I2C_SCL);
     lcd.init();
     lcd.backlight();  // Turn on the LCD backlight
     lcd.createChar(0, leftArrow);
